@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
-from .models import Course, Lesson, Video, Payment, UserCourse
+from django.http import HttpResponse,JsonResponse
+from .models import Course, Lesson, Video, Payment, UserCourse, Quizzy, Question, Answer
 from courses.forms import RegistrationForm
 from courses.forms import LoginForm
 from django.views import View
@@ -13,8 +13,10 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 # Create your views here.
+
+
 def home(request):      
-    courses = Course.objects.all()
+    courses = Course.objects.all() # lấy toàn bộ khóa học
     print(courses)
     return render(request,template_name='courses/home.html',context={"courses":courses})
 
@@ -40,7 +42,7 @@ class SignupView(View):
         form = RegistrationForm()
         return render(request,template_name="courses/signup.html",context={"form":form})
     
-    def post(self,request):
+    def post(self,request): # tạo nếu hợp lệ
         form = RegistrationForm(request.POST)
         if(form.is_valid()):
             user = form.save()
@@ -49,11 +51,11 @@ class SignupView(View):
         return render(request,template_name="courses/signup.html",context={"form":form})
 
 class LoginView(View):
-    def get(self, request):
+    def get(self, request): # hiển thị biểu mẫu 
         form = LoginForm()
         return render(request, template_name="courses/login.html", context={"form": form})
 
-    def post(self, request):
+    def post(self, request): # xử lý biểu mẫu và đăng nhập nếu hợp lệ
         form = LoginForm(request=request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
@@ -71,8 +73,8 @@ def signout(request):
 
 
 @login_required(login_url='/login')
-def checkout(request, slug):
-    course = Course.objects.get(slug=slug)
+def checkout(request, slug): 
+    course = Course.objects.get(slug=slug) # lấy thông tin chi tiết dựa vào slug
     user = request.user
     action = request.GET.get('action')
     error = None
@@ -80,7 +82,7 @@ def checkout(request, slug):
     # Kiểm tra nếu người dùng đã đăng ký khóa học
     try:
         user_course = UserCourse.objects.get(user=user, course=course)
-        error = "You are already enrolled in this course."
+        error = "You are already enrolled in this course." 
     except UserCourse.DoesNotExist:
         pass
 
@@ -140,3 +142,26 @@ def payment_success(request):
 
 def payment_cancel(request):
     return render(request, 'paypal/cancel.html', context={})
+
+
+
+#quizzy
+def QuizzyListView(request):
+    quizzes = Quizzy.objects.all()
+    return render(request, 'courses/quizzy_list.html', {'quizzes': quizzes})
+
+def QuestionListView(request, quizzy_id):
+    questions = Question.objects.filter(quizzy_id=quizzy_id)
+    return render(request, 'courses/question_list.html', {'questions': questions})
+
+#ans
+def AnswerListView(resquest):
+    ans = Answer.objects.all()
+    data = [{"id" : answer.id, "text" : answer.text, "tof" : answer.text, "quesstion" : answer.question.id} for answer in ans]
+    return JsonResponse(data,safe = False)
+
+# hiển thị câu hỏi và câu trả lời
+def question_detail(request, question_id):
+    question = Question.objects.get(id=question_id)
+    answers = Answer.objects.filter(question=question)
+    return render(request, 'courses/question_detail.html', {'question': question, 'answers': answers})

@@ -101,3 +101,15 @@ class Payment(models.Model):
     status = models.BooleanField(default=False)
 
 
+class Quizzy(models.Model):
+    lesson = models.ForeignKey(Lesson, on_delete = models.CASCADE)
+    title = models.CharField(max_length=255)
+
+class Question(models.Model):
+    quizzy = models.ForeignKey(Quizzy, on_delete=models.CASCADE)
+    text = models.TextField()
+
+class Answer(models.Model):
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    tof = models.BooleanField()
+    text = models.TextField()   

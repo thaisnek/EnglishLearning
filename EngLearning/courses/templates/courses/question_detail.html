@@ -1,0 +1,16 @@
+<!-- templates/courses/question_detail.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Question Detail</title>
+</head>
+<body>
+    <h1>{{ question.text }}</h1>
+    <ul>
+    {% for answer in answers %}
+        <li>{{ answer.text }} {% if answer.tof %} (Correct) {% endif %}</li>
+    {% endfor %}
+    </ul>
+    <a href="{% url 'question-list' quizzy_id=question.quizzy.id %}">Back to Questions</a>
+</body>
+</html>
