@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Successful</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-success">Payment Successful for Course: {{ course.title }}</h1>
+        <div class="row">
+            <div class="col-md-6">
+                <img class="img-fluid rounded" src="{{ course.thumbnail.url }}" alt="{{ course.title }}">
+            </div>
+            <div class="col-md-6">
+                <h2>{{ course.title }}</h2>
+                <p><strong>Price:</strong> ${{ course.price }}</p>
+                <p><strong>Description:</strong> {{ course.description }}</p>
+                <a href="{% url 'my-courses' %}" class="btn btn-primary">View My Courses</a>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .img-fluid {
+            border-radius: 10px;
+        }
+    </style>
+</body>
+</html>
