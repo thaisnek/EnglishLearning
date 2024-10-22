@@ -12,6 +12,8 @@ from django.urls import reverse
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.models import User
+import uuid
 # Create your views here.
 def home(request):      
     courses = Course.objects.all()
@@ -73,70 +75,16 @@ def signout(request):
 @login_required(login_url='/login')
 def checkout(request, slug):
     course = Course.objects.get(slug=slug)
-    user = request.user
-    action = request.GET.get('action')
-    error = None
 
-    # Kiểm tra nếu người dùng đã đăng ký khóa học
-    try:
-        user_course = UserCourse.objects.get(user=user, course=course)
-        error = "You are already enrolled in this course."
-    except UserCourse.DoesNotExist:
-        pass
+    action = request.GET.get("action")
 
-    amount = course.price - (course.price * course.discount * 0.01)
-
-    # Nếu giá trị thanh toán bằng 0, tự động đăng ký khóa học
-    if amount <= 0:
-        userCourse = UserCourse(user=user, course=course)
-        userCourse.save()
-        return redirect('my-courses')
-
+    order = None
     if action == 'create_payment':
-        # Thông tin thanh toán cho PayPal
-        paypal_dict = {
-            'business': settings.PAYPAL_RECEIVER_EMAIL,
-            'amount': amount,
-            'item_name': course.title,
-            'invoice': f"{user.id}-{course.id}-{timezone.now().timestamp()}",
-            'currency_code': 'USD',
-            'return': request.build_absolute_uri(reverse('payment_success')),  # URL để chuyển hướng khi thanh toán thành công
-            'cancel_return': request.build_absolute_uri(reverse('payment_cancel')),  # URL để chuyển hướng khi thanh toán bị hủy
-        }
-
-        form = PayPalPaymentsForm(initial=paypal_dict)
-        return render(request, 'paypal/checkout.html', {'form': form})
+        print("Creating Order Object")
+        order = "Order Created"
 
     context = {
-        "course": course,
-        "error": error,
+        "course" : course,
+        "order" : order
     }
     return render(request, template_name="courses/check_out.html", context=context)
-
-# Thêm các hàm xử lý thành công và hủy thanh toán
-@csrf_exempt
-def payment_success(request):
-    if request.method == "POST":
-        payment_id = request.POST.get('txn_id')
-        invoice = request.POST.get('invoice')
-
-        user_id, course_id, _ = invoice.split('-')
-        user = UserCourse.objects.get(id=user_id)
-        course = Course.objects.get(id=course_id)
-
-        user_course = UserCourse.objects.get(user=user, course=course)
-
-        payment = Payment(
-            payment_id=payment_id,
-            user_course=user_course,
-            user=user,
-            course=course,
-            status=True,
-        )
-        payment.save()
-
-        return render(request, 'paypal/success.html', {'course': course})
-    return HttpResponse("Payment was not successful")
-
-def payment_cancel(request):
-    return render(request, 'paypal/cancel.html', context={})

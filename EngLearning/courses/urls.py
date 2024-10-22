@@ -10,9 +10,6 @@ urlpatterns = [
     path('login/',LoginView.as_view(),name='login'),
     path('course/<str:slug>/',coursePage,name='coursepage'),
     path('check-out/<str:slug>/',checkout,name='check-out'),
-    path('payment-success/', payment_success, name='payment_success'),
-    path('payment-cancel/', payment_cancel, name='payment_cancel'),
-    path('paypal/', include('paypal.standard.ipn.urls')),
 ] 
 
 urlpatterns += static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)
