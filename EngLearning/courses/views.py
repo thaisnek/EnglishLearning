@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
-from .models import Course, Lesson, Video, Payment, UserCourse
+from django.http import HttpResponse,JsonResponse
+from .models import Course, Lesson, Video, Payment, UserCourse, Quizzy, Question, Answer
 from courses.forms import RegistrationForm
 from courses.forms import LoginForm
 from django.views import View
@@ -15,8 +15,10 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 import uuid
 # Create your views here.
+
+
 def home(request):      
-    courses = Course.objects.all()
+    courses = Course.objects.all() # lấy toàn bộ khóa học
     print(courses)
     return render(request,template_name='courses/home.html',context={"courses":courses})
 
@@ -42,7 +44,7 @@ class SignupView(View):
         form = RegistrationForm()
         return render(request,template_name="courses/signup.html",context={"form":form})
     
-    def post(self,request):
+    def post(self,request): # tạo nếu hợp lệ
         form = RegistrationForm(request.POST)
         if(form.is_valid()):
             user = form.save()
@@ -51,11 +53,11 @@ class SignupView(View):
         return render(request,template_name="courses/signup.html",context={"form":form})
 
 class LoginView(View):
-    def get(self, request):
+    def get(self, request): # hiển thị biểu mẫu 
         form = LoginForm()
         return render(request, template_name="courses/login.html", context={"form": form})
 
-    def post(self, request):
+    def post(self, request): # xử lý biểu mẫu và đăng nhập nếu hợp lệ
         form = LoginForm(request=request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
@@ -78,6 +80,28 @@ def checkout(request, slug):
 
     action = request.GET.get("action")
 
+def checkout(request, slug): 
+    course = Course.objects.get(slug=slug) # lấy thông tin chi tiết dựa vào slug
+    user = request.user
+    action = request.GET.get('action')
+    error = None
+
+    # Kiểm tra nếu người dùng đã đăng ký khóa học
+    try:
+        user_course = UserCourse.objects.get(user=user, course=course)
+        error = "You are already enrolled in this course." 
+    except UserCourse.DoesNotExist:
+        pass
+
+    amount = course.price - (course.price * course.discount * 0.01)
+
+    # Nếu giá trị thanh toán bằng 0, tự động đăng ký khóa học
+    if amount <= 0:
+        userCourse = UserCourse(user=user, course=course)
+        userCourse.save()
+        return redirect('my-courses')
+
+
     order = None
     if action == 'create_payment':
         print("Creating Order Object")
@@ -87,4 +111,57 @@ def checkout(request, slug):
         "course" : course,
         "order" : order
     }
+
     return render(request, template_name="courses/check_out.html", context=context)
+
+# Thêm các hàm xử lý thành công và hủy thanh toán
+@csrf_exempt
+def payment_success(request):
+    if request.method == "POST":
+        payment_id = request.POST.get('txn_id')
+        invoice = request.POST.get('invoice')
+
+        user_id, course_id, _ = invoice.split('-')
+        user = UserCourse.objects.get(id=user_id)
+        course = Course.objects.get(id=course_id)
+
+        user_course = UserCourse.objects.get(user=user, course=course)
+
+        payment = Payment(
+            payment_id=payment_id,
+            user_course=user_course,
+            user=user,
+            course=course,
+            status=True,
+        )
+        payment.save()
+
+        return render(request, 'paypal/success.html', {'course': course})
+    return HttpResponse("Payment was not successful")
+
+def payment_cancel(request):
+    return render(request, 'paypal/cancel.html', context={})
+
+
+
+#quizzy
+def QuizzyListView(request):
+    quizzes = Quizzy.objects.all()
+    return render(request, 'courses/quizzy_list.html', {'quizzes': quizzes})
+
+def QuestionListView(request, quizzy_id):
+    questions = Question.objects.filter(quizzy_id=quizzy_id)
+    return render(request, 'courses/question_list.html', {'questions': questions})
+
+#ans
+def AnswerListView(resquest):
+    ans = Answer.objects.all()
+    data = [{"id" : answer.id, "text" : answer.text, "tof" : answer.text, "quesstion" : answer.question.id} for answer in ans]
+    return JsonResponse(data,safe = False)
+
+# hiển thị câu hỏi và câu trả lời
+def question_detail(request, question_id):
+    question = Question.objects.get(id=question_id)
+    answers = Answer.objects.filter(question=question)
+    return render(request, 'courses/question_detail.html', {'question': question, 'answers': answers})
+

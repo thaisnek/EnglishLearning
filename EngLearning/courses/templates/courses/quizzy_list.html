@@ -1,0 +1,19 @@
+<!-- templates/courses/quizzy_list.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quizzy List</title>
+</head>
+<body>
+    <h1>Quizzy List</h1>
+    <ul>
+    {% for quiz in quizzes %}
+        <li>
+            <a href="{% url 'question-list' quizzy_id=quiz.id %}">
+                {{ quiz.title }}
+            </a>
+        </li>
+    {% endfor %}
+    </ul>
+</body>
+</html>

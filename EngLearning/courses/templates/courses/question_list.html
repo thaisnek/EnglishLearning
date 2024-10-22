@@ -1,0 +1,28 @@
+<!-- templates/courses/question_list.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Question List</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $(".question-link").click(function(event) {
+                event.preventDefault();
+                var url = $(this).attr("href");
+                $.get(url, function(data) {
+                    $("#answer-container").html(data);
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1>Question List</h1>
+    <ul>
+    {% for question in questions %}
+        <li><a href="{% url 'question-detail' question_id=question.id %}" class="question-link">{{ question.text }}</a></li>
+    {% endfor %}
+    </ul>
+    <div id="answer-container"></div>
+</body>
+</html>
