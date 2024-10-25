@@ -2,10 +2,18 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Question List</title>
+    <title>Danh sách câu hỏi</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script type="text/javascript">
         $(document).ready(function() {
+            // Tự động tải câu hỏi đầu tiên khi trang được load
+            var firstQuestionUrl = $(".question-link").first().attr("href");
+            if (firstQuestionUrl) {
+                $.get(firstQuestionUrl, function(data) {
+                    $("#answer-container").html(data);
+                });
+            }
+            // Xử lý khi nhấn vào các câu hỏi khác
             $(".question-link").click(function(event) {
                 event.preventDefault();
                 var url = $(this).attr("href");
@@ -13,14 +21,39 @@
                     $("#answer-container").html(data);
                 });
             });
+            // Xử lý chọn câu trả lời
+            $(document).on("click", ".answer-btn", function(event) {
+                event.preventDefault();
+                var answerId = $(this).data("answer-id");
+                var questionId = $(this).data("question-id");
+                $.post("{% url 'check-answer' %}", {
+                    'answer_id': answerId,
+                    'question_id': questionId,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                }, function(data) {
+                    if (data.correct) {
+                        alert('Đúng!');
+                    } else {
+                        alert('Sai!');
+                    }
+                    if (data.next_question_id) {
+                        $.get("/questions/" + data.next_question_id + "/", function(nextData) {
+                            $("#answer-container").html(nextData);
+                        });
+                    } else {
+                        alert('Hoàn thành quiz!');
+                        window.location.href = "{% url 'coursepage' slug=course_slug %}";
+                    }
+                });
+            });
         });
     </script>
 </head>
 <body>
-    <h1>Question List</h1>
+    <h1>Danh sách câu hỏi</h1>
     <ul>
     {% for question in questions %}
-        <li><a href="{% url 'question-detail' question_id=question.id %}" class="question-link">{{ question.text }}</a></li>
+        <li><a href="{% url 'question-detail' question_id=question.id %}" class="question-link">{{ forloop.counter }}</a></li>
     {% endfor %}
     </ul>
     <div id="answer-container"></div>

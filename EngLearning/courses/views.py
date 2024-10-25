@@ -14,6 +14,29 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 import uuid
+
+
+
+from django.shortcuts import get_object_or_404
+
+def check_answer(request):
+    if request.method == 'POST':
+        answer_id = request.POST.get('answer_id')
+        question_id = request.POST.get('question_id')
+        answer = get_object_or_404(Answer, id=answer_id)
+        question = get_object_or_404(Question, id=question_id)
+        correct = answer.tof
+
+        next_question = Question.objects.filter(quizzy=question.quizzy, id__gt=question_id).first()
+        
+        response_data = {
+            'correct': correct,
+            'next_question_id': next_question.id if next_question else None,
+        }
+        return JsonResponse(response_data)
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+
 # Create your views here.
 
 
@@ -151,7 +174,14 @@ def QuizzyListView(request):
 
 def QuestionListView(request, quizzy_id):
     questions = Question.objects.filter(quizzy_id=quizzy_id)
-    return render(request, 'courses/question_list.html', {'questions': questions})
+    quizzy = Quizzy.objects.get(id=quizzy_id)
+    course_slug = quizzy.lesson.course.slug
+    context = {
+        'questions': questions,
+        'course_slug': course_slug,
+    }
+    return render(request, 'courses/question_list.html', context)
+
 
 #ans
 def AnswerListView(resquest):
@@ -161,7 +191,10 @@ def AnswerListView(resquest):
 
 # hiển thị câu hỏi và câu trả lời
 def question_detail(request, question_id):
-    question = Question.objects.get(id=question_id)
+    question = get_object_or_404(Question, pk=question_id)
     answers = Answer.objects.filter(question=question)
-    return render(request, 'courses/question_detail.html', {'question': question, 'answers': answers})
-
+    context = {
+        'question': question,
+        'answers': answers,
+    }
+    return render(request, 'courses/question_detail.html', context)

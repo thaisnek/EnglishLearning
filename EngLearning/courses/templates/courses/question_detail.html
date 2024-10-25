@@ -2,15 +2,16 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Question Detail</title>
+    <title>{{ question.text }}</title>
 </head>
 <body>
     <h1>{{ question.text }}</h1>
     <ul>
     {% for answer in answers %}
-        <li>{{ answer.text }} {% if answer.tof %} (Correct) {% endif %}</li>
+        <li>
+            <button class="answer-btn" data-answer-id="{{ answer.id }}" data-question-id="{{ question.id }}">{{ answer.text }}</button>
+        </li>
     {% endfor %}
     </ul>
-    <a href="{% url 'question-list' quizzy_id=question.quizzy.id %}">Back to Questions</a>
 </body>
 </html>
