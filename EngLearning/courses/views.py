@@ -38,12 +38,22 @@ def check_answer(request):
 
 
 def home(request):      
-    courses = Course.objects.all() 
+    courses = Course.objects.filter(active=True) 
     print(courses)
     return render(request,template_name='courses/home.html',context={"courses":courses})
 
 
-    
+
+@login_required(login_url='/login')
+def my_courses(request):
+    user = request.user
+    user_courses = UserCourse.objects.filter(user=user)
+    context = {
+        'user_courses' : user_courses
+    }
+    return render(request,template_name='courses/my_course.html',context=context)  
+
+
 
 def coursePage(request,slug):
     course = Course.objects.get(slug = slug) 
@@ -69,6 +79,8 @@ def coursePage(request,slug):
         "video" : video
     }
     return render(request,template_name="courses/course_page.html",context=context)
+
+
 
 class SignupView(View):
     def get(self,request):
@@ -130,7 +142,7 @@ def checkout(request, slug):
     paypal_dict = {
         'business': settings.PAYPAL_RECEIVER_EMAIL,
         'amount': str(amount),
-        'item_name': course.title,
+        'item_name': course.name,
         'invoice': payment.order_id,
         'currency_code': 'USD',
         'notify_url': request.build_absolute_uri(reverse('paypal-ipn')),
@@ -147,7 +159,7 @@ def checkout(request, slug):
     return render(request, template_name="courses/check_out.html", context=context)
 
 
-@login_required(login_url='/login')
+
 def payment_success(request, slug):
     course = Course.objects.get(slug=slug)
     user = request.user
@@ -166,7 +178,7 @@ def payment_success(request, slug):
 
 
 
-@login_required(login_url='/login')
+
 def payment_cancel(request, slug):
     course = Course.objects.get(slug=slug)
     return render(request, 'courses/payment_cancel.html', {'course': course})

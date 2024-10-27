@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 
 
 class Course(models.Model):
-    title = models.CharField(max_length=500)
+    name = models.CharField(max_length=500)
     slug = models.SlugField(max_length=500, unique=True, null=False,default='default-slug')
     description = models.CharField(max_length=500, null=True, blank=True)
     discount = models.IntegerField(null=False,default=0)
@@ -18,11 +18,11 @@ class Course(models.Model):
     length = models.IntegerField(null=False)
 
     def __str__(self):
-        return self.title
+        return self.name
     
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.title) + "-" + str(uuid.uuid4())
+            self.slug = slugify(self.name) + "-" + str(uuid.uuid4())
         super().save(*args, **kwargs)
 
 
@@ -86,7 +86,7 @@ class UserCourse(models.Model):
     date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f'{self.user.username} - {self.course.title}'
+        return f'{self.user.username} - {self.course.name}'
     
 
 
@@ -100,7 +100,7 @@ class Payment(models.Model):
     status = models.BooleanField(default=False)
 
     def __str__(self):
-        return f'{self.user.username} - {self.course.title}'
+        return f'{self.user.username} - {self.course.name}'
 
 
 
