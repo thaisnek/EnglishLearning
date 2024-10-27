@@ -11,6 +11,29 @@ from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 import uuid
+
+
+
+from django.shortcuts import get_object_or_404
+
+def check_answer(request):
+    if request.method == 'POST':
+        answer_id = request.POST.get('answer_id')
+        question_id = request.POST.get('question_id')
+        answer = get_object_or_404(Answer, id=answer_id)
+        question = get_object_or_404(Question, id=question_id)
+        correct = answer.tof
+
+        next_question = Question.objects.filter(quizzy=question.quizzy, id__gt=question_id).first()
+        
+        response_data = {
+            'correct': correct,
+            'next_question_id': next_question.id if next_question else None,
+        }
+        return JsonResponse(response_data)
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+
 # Create your views here.
 
 
@@ -200,3 +223,4 @@ def check_answer(request):
         }
         return JsonResponse(response_data)
     return JsonResponse({'error': 'Invalid request'}, status=400)
+
