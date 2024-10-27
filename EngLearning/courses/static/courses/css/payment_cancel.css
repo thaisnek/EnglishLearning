@@ -1,0 +1,13 @@
+.container{
+    text-align:center;
+    width:fit-content;
+    background-color: aliceblue;
+    padding:20px;
+    font-family: sans-serif;
+    margin:50px auto;
+    border-radius: 10px;
+    border: 1px solid black;
+}
+p,a{
+    font-size:20px;
+}
