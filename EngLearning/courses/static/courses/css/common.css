@@ -9,3 +9,24 @@
 .display-5{
     font-size: 35px;
 }
+
+
+.no-preview{
+    cursor: not-allowed;
+}   
+a:hover{
+    text-decoration: none;
+}
+
+a{
+    color: rgb(192, 175, 175);
+}
+
+.active-video-link{
+    color: rgb(15, 15, 14);
+}
+
+.active-video-link:hover{
+    text-decoration: none;
+    color: rgb(196, 43, 43);
+}

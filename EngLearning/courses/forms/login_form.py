@@ -7,17 +7,14 @@ class LoginForm(AuthenticationForm):
     username = forms.EmailField(max_length=255, required=True, label='Email Address')
 
     def clean(self):
-        # Lấy email và password từ cleaned_data
         email = self.cleaned_data.get('username')
         password = self.cleaned_data.get('password')
 
-        # Thử tìm user bằng email
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
             raise ValidationError("Email or Password invalid")
 
-        # Thay thế username trong form bằng tên người dùng thực tế
         self.cleaned_data['username'] = user.username
 
         return super().clean()

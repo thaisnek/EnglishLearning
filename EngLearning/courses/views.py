@@ -1,26 +1,26 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponse,JsonResponse
 from .models import Course, Lesson, Video, Payment, UserCourse, Quizzy, Question, Answer
 from courses.forms import RegistrationForm
 from courses.forms import LoginForm
 from django.views import View
-from django.contrib.auth import logout,authenticate,login
-import paypalrestsdk
+from django.contrib.auth import logout,login
 from django.conf import settings
 from paypal.standard.forms import PayPalPaymentsForm
 from django.urls import reverse
-from django.utils import timezone
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 import uuid
 # Create your views here.
 
 
 def home(request):      
-    courses = Course.objects.all() # lấy toàn bộ khóa học
+    courses = Course.objects.all() 
     print(courses)
     return render(request,template_name='courses/home.html',context={"courses":courses})
+
+
+    
 
 def coursePage(request,slug):
     course = Course.objects.get(slug = slug) 
@@ -30,8 +30,16 @@ def coursePage(request,slug):
         serial_number = 1
     video = Video.objects.get(serial_number = serial_number , course =course)
 
-    if((request.user.is_authenticated is False) and (video.is_preview is False)):
-        return redirect("login")
+    if (video.is_preview is False):
+
+        if request.user.is_authenticated is False:
+            return redirect("login")
+        else:
+            user = request.user
+            try:
+                user_course = UserCourse.objects.get(user = user  , course = course)
+            except:
+                return redirect("check-out" , slug=course.slug)
 
     context = {
         "course" : course,
@@ -44,7 +52,7 @@ class SignupView(View):
         form = RegistrationForm()
         return render(request,template_name="courses/signup.html",context={"form":form})
     
-    def post(self,request): # tạo nếu hợp lệ
+    def post(self,request): 
         form = RegistrationForm(request.POST)
         if(form.is_valid()):
             user = form.save()
@@ -53,11 +61,11 @@ class SignupView(View):
         return render(request,template_name="courses/signup.html",context={"form":form})
 
 class LoginView(View):
-    def get(self, request): # hiển thị biểu mẫu 
+    def get(self, request):  
         form = LoginForm()
         return render(request, template_name="courses/login.html", context={"form": form})
 
-    def post(self, request): # xử lý biểu mẫu và đăng nhập nếu hợp lệ
+    def post(self, request): 
         form = LoginForm(request=request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
@@ -75,72 +83,72 @@ def signout(request):
 
 
 @login_required(login_url='/login')
-def checkout(request, slug):
-    course = Course.objects.get(slug=slug)
-
-    action = request.GET.get("action")
-
 def checkout(request, slug): 
-    course = Course.objects.get(slug=slug) # lấy thông tin chi tiết dựa vào slug
+    course = Course.objects.get(slug=slug)
     user = request.user
-    action = request.GET.get('action')
     error = None
 
-    # Kiểm tra nếu người dùng đã đăng ký khóa học
     try:
         user_course = UserCourse.objects.get(user=user, course=course)
-        error = "You are already enrolled in this course." 
+        error = "You are already enrolled in this course."
     except UserCourse.DoesNotExist:
         pass
 
     amount = course.price - (course.price * course.discount * 0.01)
 
-    # Nếu giá trị thanh toán bằng 0, tự động đăng ký khóa học
     if amount <= 0:
-        userCourse = UserCourse(user=user, course=course)
-        userCourse.save()
+        user_course = UserCourse(user=user, course=course)
+        user_course.save()
         return redirect('my-courses')
 
-
-    order = None
-    if action == 'create_payment':
-        print("Creating Order Object")
-        order = "Order Created"
-
+    payment = Payment(user=user, course=course, price=amount, order_id=str(uuid.uuid4()))
+    if error is None:
+        payment.save()
+    paypal_dict = {
+        'business': settings.PAYPAL_RECEIVER_EMAIL,
+        'amount': str(amount),
+        'item_name': course.title,
+        'invoice': payment.order_id,
+        'currency_code': 'USD',
+        'notify_url': request.build_absolute_uri(reverse('paypal-ipn')),
+        'return_url': request.build_absolute_uri(reverse('payment_success', kwargs={'slug': course.slug})),
+        'cancel_return': request.build_absolute_uri(reverse('payment_cancel', kwargs={'slug': course.slug})),
+    }
+    paypal_payment = PayPalPaymentsForm(initial=paypal_dict)
     context = {
         "course" : course,
-        "order" : order
+        'paypal': paypal_payment,
+        "error": error
     }
 
     return render(request, template_name="courses/check_out.html", context=context)
 
-# Thêm các hàm xử lý thành công và hủy thanh toán
-@csrf_exempt
-def payment_success(request):
-    if request.method == "POST":
-        payment_id = request.POST.get('txn_id')
-        invoice = request.POST.get('invoice')
 
-        user_id, course_id, _ = invoice.split('-')
-        user = UserCourse.objects.get(id=user_id)
-        course = Course.objects.get(id=course_id)
+@login_required(login_url='/login')
+def payment_success(request, slug):
+    course = Course.objects.get(slug=slug)
+    user = request.user
 
-        user_course = UserCourse.objects.get(user=user, course=course)
-
-        payment = Payment(
-            payment_id=payment_id,
-            user_course=user_course,
-            user=user,
-            course=course,
-            status=True,
-        )
+    payment = Payment.objects.filter(user=user, course=course, status=False).first()
+    if payment:
+        payment.status = True  
         payment.save()
 
-        return render(request, 'paypal/success.html', {'course': course})
-    return HttpResponse("Payment was not successful")
+        user_course = UserCourse(user=user, course=course)
+        user_course.save()
+        payment.user_course = user_course
+        payment.save()
 
-def payment_cancel(request):
-    return render(request, 'paypal/cancel.html', context={})
+    return render(request, 'courses/payment_success.html', {'course': course})
+
+
+
+@login_required(login_url='/login')
+def payment_cancel(request, slug):
+    course = Course.objects.get(slug=slug)
+    return render(request, 'courses/payment_cancel.html', {'course': course})
+
+
 
 
 
@@ -151,7 +159,14 @@ def QuizzyListView(request):
 
 def QuestionListView(request, quizzy_id):
     questions = Question.objects.filter(quizzy_id=quizzy_id)
-    return render(request, 'courses/question_list.html', {'questions': questions})
+    quizzy = Quizzy.objects.get(id=quizzy_id)
+    course_slug = quizzy.lesson.course.slug
+    context = {
+        'questions': questions,
+        'course_slug': course_slug,
+    }
+    return render(request, 'courses/question_list.html', context)
+
 
 #ans
 def AnswerListView(resquest):
@@ -161,7 +176,27 @@ def AnswerListView(resquest):
 
 # hiển thị câu hỏi và câu trả lời
 def question_detail(request, question_id):
-    question = Question.objects.get(id=question_id)
+    question = get_object_or_404(Question, pk=question_id)
     answers = Answer.objects.filter(question=question)
-    return render(request, 'courses/question_detail.html', {'question': question, 'answers': answers})
+    context = {
+        'question': question,
+        'answers': answers,
+    }
+    return render(request, 'courses/question_detail.html', context)
 
+def check_answer(request):
+    if request.method == 'POST':
+        answer_id = request.POST.get('answer_id')
+        question_id = request.POST.get('question_id')
+        answer = get_object_or_404(Answer, id=answer_id)
+        question = get_object_or_404(Question, id=question_id)
+        correct = answer.tof
+
+        next_question = Question.objects.filter(quizzy=question.quizzy, id__gt=question_id).first()
+        
+        response_data = {
+            'correct': correct,
+            'next_question_id': next_question.id if next_question else None,
+        }
+        return JsonResponse(response_data)
+    return JsonResponse({'error': 'Invalid request'}, status=400)

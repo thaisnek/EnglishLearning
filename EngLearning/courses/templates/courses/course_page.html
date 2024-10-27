@@ -5,14 +5,15 @@
 Courses
 {%endblock%} 
 
-{%block content%}
+
 {% block css%}
-<link rel="stylesheet" href="{% static "courses/css/scrollbar.css" %}"
+<link rel="stylesheet" href="{% static "courses/css/scrollbar.css" %}">
 <link href="{% static 'courses/css/common.css' %}" rel="stylesheet">
 {%endblock%}
 {% block js %}
 <script src="{% static "courses/js/course_page.js" %}"></script>
 {% endblock %}
+{%block content%}
 <div class="container-fluid">
     <div>
         <br>
@@ -36,11 +37,22 @@ Courses
                                     </h5>
                                 </div>
                                 <div id="collapseLesson{{ lesson.id }}" class="collapse" aria-labelledby="curriculumheading{{ lesson.id }}">
+                                    {% is_enrolled request course as enrolled %}
                                     {% for video in lesson.video_set.all %}
                                     <div class="border-top px-3 py-2 d-md-flex align-items-center">
                                         <div class="d-flex align-items-center me-auto mb-2 mb-md-0">
                                             <div class="ms-2">
-                                                <a href="?lecture={{video.serial_number}}" >{{ video.title }}</a>
+                                                <li
+                                                class="list-group-item {% if video == video %} active-video {% endif %} ">
+                                                <a class="
+                                                
+                                                {% if not enrolled and not video.is_preview %} text-muted no-preview {% endif %}
+                                                {% if video == video %} active-video-link {% endif %}
+                                                
+                                                " href="?lecture={{video.serial_number}}">
+                                                    {{video}}
+                                                </a>
+                                                </li>
                                             </div>
                                         </div>
                                     </div>
