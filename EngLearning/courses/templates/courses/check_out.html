@@ -5,7 +5,8 @@
 {% endblock %}
 
 {% block content %}
-
+<br>
+<br>
 
 
 {% if error %}
@@ -42,9 +43,35 @@
         <div class="col-md-6">
             <h3 class="mb-4">Complete Your Payment</h3>
             <hr>
+            {% if coupon %}
+            <p class="alert alert-light border">
+                Coupon Code Applied
+                You Have Got {{coupon.discount}}% Discount
+            </p>
+            <p class="display-5">Payable Amount: <b>{% cal_sellprice course.price coupon.discount as value %} {{ value|usd }}</b></p>
+            {% else %}
             <p class="display-5">Payable Amount: <b>{% cal_sellprice course.price course.discount as value %} {{ value|usd }}</b></p>
-            
-            
+            {% endif %}
+            <br>
+            <div class="border p-4 rounded border-success">
+                <p>Coupon Code:</p>
+                <form action="" method="get">
+                    <div class="col-lg-5">
+                        <input type="text" name="couponcode" class="form-control" id="">
+                    </div>
+                    <div class="form-group">
+                        <input type="submit" value="Apply" class="btn btn-primary">
+                    </div>
+                </form>
+                {% if coupon_code_message %}
+                    <div class="alert alert-info">
+                        {{coupon_code_message}}
+                    </div>
+                {% endif %}
+            </div>
+
+            <br>
+            <br>
             <!-- Tạo form với nút bấm tùy chỉnh -->
             <form action="https://www.sandbox.paypal.com/cgi-bin/webscr" method="post">
                 <input type="hidden" name="cmd" value="_xclick">
@@ -61,6 +88,13 @@
         </div>
     </div>
 </div>
-
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
 {% endif %}
 {% endblock %}

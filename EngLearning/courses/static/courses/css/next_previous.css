@@ -1,0 +1,14 @@
+#next-video,
+#previous-video {
+    background-color: rgb(100, 100, 100);
+    color: rgb(240, 240, 240);
+    border-radius: 5px;
+    border: 0px;
+    position: absolute;
+    top: 83%;
+    padding: 10px;
+    font-size: 15px;
+    cursor: pointer;
+    width: 50px;
+    display: none;
+}

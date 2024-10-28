@@ -4,13 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Payment Successful</title>
+    <link rel="stylesheet" href="../../static/courses/css/payment_success.css">
 </head>
 <body>
     <div class="container mt-5">
         <h2>Payment Successful!</h2>
-        <p>Thank you for your purchase of {{ course.name }}.</p>
+        <p>Thank you for your purchase of {{ course.title }}.</p>
         <p>Your enrollment has been confirmed.</p>
-        <a href="{% url 'home' %}" class="btn btn-primary">Go to Home</a>
+        <button><a href="{% url 'my-courses' %}" class="btn btn-primary">Go to My Courses</a></button>
     </div>
     
 </body>

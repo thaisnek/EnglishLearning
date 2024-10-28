@@ -13,8 +13,8 @@ Signup
     <div class="row">
        {% for uc in user_courses %}
        <div class="col mx-auto">
-           <div class="card mx-auto" style="width: 18rem;">
-               <img class="card-img-top" src="{{uc.course.thumbnail.url}}" alt="Card image cap">
+           <div class="card mx-auto" style="width: 25rem;">
+               <img class="card-img-top" src="{{uc.course.thumbnail.url}}" alt="Card image cap" style="height: 250px; object-fit: cover;">
                <div class="card-body">
                    <h5 class="card-title">{{uc.course.name}}</h5>
                    
@@ -34,6 +34,8 @@ Signup
  
                </div>
            </div>
+           <br>
+           <br>
        </div>
        {% endfor %}
    </div>

@@ -118,3 +118,10 @@ class Answer(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     tof = models.BooleanField()
     text = models.TextField()   
+
+
+
+class CouponCode(models.Model):
+    code = models.CharField(max_length=10)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='coupons')
+    discount = models.IntegerField(default=0)

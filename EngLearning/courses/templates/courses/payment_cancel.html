@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Payment Canceled</title>
+    <link rel="stylesheet" href="../../static/courses/css/payment_cancel.css">
 </head>
 <body>
     <div class="container mt-5">
         <h2>Payment Canceled</h2>
-        <p>Your payment for {{ course.name }} has been canceled.</p>
-        <a href="{% url 'home' %}" class="btn btn-primary">Return to Home</a>
+        <p>Your payment for {{ course.title }} has been canceled.</p>
+        <button><a href="{% url 'home' %}" class="btn btn-primary">Return to Home</a></button>
     </div>
     
 </body>

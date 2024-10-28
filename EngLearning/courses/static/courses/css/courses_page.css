@@ -1,0 +1,25 @@
+.col-3 button:hover{
+    background-color: aliceblue;
+}
+.col-3 a:hover{
+    font-size: 25px;
+}
+.col-3 a{
+    transition: .4s;
+    color:black;
+    font-weight:600;
+    text-decoration: none;
+    font-size:20px;
+}
+.col-3 button{
+    color:black;
+    font-weight:700;
+    font-size:25px;
+    width:100%;
+}
+.col-3 li.list-group-item.active-video{
+    border:none;
+}
+.col-3 div{
+    cursor: pointer;
+}

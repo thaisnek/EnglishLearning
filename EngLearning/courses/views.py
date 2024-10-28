@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponse,JsonResponse
-from .models import Course, Lesson, Video, Payment, UserCourse, Quizzy, Question, Answer
+from .models import Course, Lesson, Video, Payment, UserCourse, Quizzy, Question, Answer, CouponCode
 from courses.forms import RegistrationForm
 from courses.forms import LoginForm
 from django.views import View
@@ -58,9 +58,18 @@ def my_courses(request):
 def coursePage(request,slug):
     course = Course.objects.get(slug = slug) 
     serial_number = request.GET.get('lecture')
-
+    videos = course.video_set.all().order_by("serial_number")
+    next_lecture = 2
+    previous_lecture = None
     if serial_number is None:
         serial_number = 1
+    else:
+        next_lecture = int(serial_number)+1
+        if len(videos) < next_lecture:
+            next_lecture = None
+        previous_lecture = int(serial_number)-1
+
+
     video = Video.objects.get(serial_number = serial_number , course =course)
 
     if (video.is_preview is False):
@@ -76,7 +85,9 @@ def coursePage(request,slug):
 
     context = {
         "course" : course,
-        "video" : video
+        "video" : video,
+        "next_lecture" : next_lecture,
+        "previous_lecture" : previous_lecture
     }
     return render(request,template_name="courses/course_page.html",context=context)
 
@@ -122,7 +133,9 @@ def checkout(request, slug):
     course = Course.objects.get(slug=slug)
     user = request.user
     error = None
-
+    couponcode = request.GET.get('couponcode')
+    coupon_code_message = None
+    coupon = None
     try:
         user_course = UserCourse.objects.get(user=user, course=course)
         error = "You are already enrolled in this course."
@@ -130,6 +143,14 @@ def checkout(request, slug):
         pass
 
     amount = course.price - (course.price * course.discount * 0.01)
+
+    if couponcode:
+        try:
+            coupon = CouponCode.objects.get(course=course, code=couponcode)
+            amount = course.price - (course.price * coupon.discount * 0.01)
+        except:
+            coupon_code_message = "Invalid Coupon Code"
+            print("Coupon Code Invalid")
 
     if amount <= 0:
         user_course = UserCourse(user=user, course=course)
@@ -150,10 +171,13 @@ def checkout(request, slug):
         'cancel_return': request.build_absolute_uri(reverse('payment_cancel', kwargs={'slug': course.slug})),
     }
     paypal_payment = PayPalPaymentsForm(initial=paypal_dict)
+
     context = {
         "course" : course,
         'paypal': paypal_payment,
-        "error": error
+        "error": error,
+        "coupon" : coupon,
+        "coupon_code_message" : coupon_code_message
     }
 
     return render(request, template_name="courses/check_out.html", context=context)
