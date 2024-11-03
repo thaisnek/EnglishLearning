@@ -3,85 +3,8 @@
 <head>
     <title>Danh sách câu hỏi</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
-            color: #333;
-            display: flex;
-            justify-content: center;
-            padding: 20px;
-        }
-        
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 10px;
-        }
-
-        h2 {
-            text-align: center;
-            color: #666;
-        }
-
-        ul {
-            list-style-type: none;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-
-        ul li {
-            margin: 0 10px;
-        }
-
-        ul li a {
-            text-decoration: none;
-            color: #007bff;
-            font-weight: bold;
-            font-size: 18px;
-        }
-
-        ul li a:hover {
-            color: #0056b3;
-            text-decoration: underline;
-        }
-
-        #answer-container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #fff;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            text-align: center;
-        }
-
-        .answer-btn {
-            display: inline-block;
-            padding: 10px 20px;
-            margin: 10px;
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        .answer-btn:hover {
-            background-color: #0056b3;
-        }
-
-        #current-score {
-            font-weight: bold;
-            color: #007bff;
-        }
-    </style>
-
-
-
+    <link rel="stylesheet" href="../../../static/courses/css/question_list.css">
+    
     <script type="text/javascript">
         $(document).ready(function() {
             // Tự động tải câu hỏi đầu tiên khi trang được load
