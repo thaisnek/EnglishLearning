@@ -24,11 +24,17 @@ def check_answer(request):
         question = get_object_or_404(Question, id=question_id)
         correct = answer.tof
 
+        quizzy = question.quizzy
+        if correct:
+            quizzy.score += 1
+            quizzy.save()
+
         next_question = Question.objects.filter(quizzy=question.quizzy, id__gt=question_id).first()
         
         response_data = {
             'correct': correct,
             'next_question_id': next_question.id if next_question else None,
+            'current_score': quizzy.score  # Trả về điểm số hiện tại
         }
         return JsonResponse(response_data)
     return JsonResponse({'error': 'Invalid request'}, status=400)
@@ -212,19 +218,29 @@ def payment_cancel(request, slug):
 
 
 #quizzy
+#quizzy
 def QuizzyListView(request):
     quizzes = Quizzy.objects.all()
     return render(request, 'courses/quizzy_list.html', {'quizzes': quizzes})
 
 def QuestionListView(request, quizzy_id):
-    questions = Question.objects.filter(quizzy_id=quizzy_id)
-    quizzy = Quizzy.objects.get(id=quizzy_id)
+    quizzy = get_object_or_404(Quizzy, id=quizzy_id)
+    questions = Question.objects.filter(quizzy=quizzy)
+    question_count = questions.count()  # Đếm số lượng câu hỏi
     course_slug = quizzy.lesson.course.slug
+
+    # Reset điểm số về 0 khi bắt đầu quiz
+    quizzy.score = 0
+    quizzy.save()
+
     context = {
         'questions': questions,
+        'quizzy': quizzy,
         'course_slug': course_slug,
+        'question_count': question_count,  # Thêm số lượng câu hỏi vào context
     }
     return render(request, 'courses/question_list.html', context)
+
 
 
 #ans
@@ -242,21 +258,4 @@ def question_detail(request, question_id):
         'answers': answers,
     }
     return render(request, 'courses/question_detail.html', context)
-
-def check_answer(request):
-    if request.method == 'POST':
-        answer_id = request.POST.get('answer_id')
-        question_id = request.POST.get('question_id')
-        answer = get_object_or_404(Answer, id=answer_id)
-        question = get_object_or_404(Question, id=question_id)
-        correct = answer.tof
-
-        next_question = Question.objects.filter(quizzy=question.quizzy, id__gt=question_id).first()
-        
-        response_data = {
-            'correct': correct,
-            'next_question_id': next_question.id if next_question else None,
-        }
-        return JsonResponse(response_data)
-    return JsonResponse({'error': 'Invalid request'}, status=400)
 
