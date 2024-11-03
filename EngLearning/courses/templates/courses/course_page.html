@@ -88,9 +88,16 @@
                                                         <h5 class="card-title">Quizzes</h5>
                                                         <p class="card-text">
                                                             <ul>
-                                                                {% for quiz in lesson.quizzy_set.all %}
-                                                                    <li><a href="{% url 'question-list' quizzy_id=quiz.id %}">{{ quiz.title }}</a></li>
-                                                                {% endfor %}
+                                                                {% is_enrolled request course as enrolled %}
+                                                                {% if not enrolled %}
+                                                                    {% for quiz in lesson.quizzy_set.all %}
+                                                                        <li><a class="text-muted no-preview" href="{% url 'check-out' slug=course.slug %}">{{ quiz.title }}</a></li>
+                                                                    {% endfor %}
+                                                                {% else %}
+                                                                    {% for quiz in lesson.quizzy_set.all %}
+                                                                        <li><a href="{% url 'question-list' quizzy_id=quiz.id %}">{{ quiz.title }}</a></li>
+                                                                    {% endfor %}
+                                                                {% endif %}
                                                             </ul>
                                                         </p>
                                                     </div>
