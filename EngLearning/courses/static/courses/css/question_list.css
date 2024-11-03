@@ -1,0 +1,49 @@
+body {
+    font-family: sans-serif;
+    display: flex;
+    justify-content: center;
+    padding: 50px;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0px;
+}
+
+h1 {
+    border: 1px solid black;
+    padding: 20px;
+    margin: 40px;
+    border-radius: 10px;
+}
+
+#answer-container {
+    max-width: 600px;
+    border-radius: 5px;
+    text-align: center;
+    border: 1px solid black;
+    padding:20px;
+}
+
+.answer-btn {
+    background-color: rgb(55, 117, 171);
+    border: none;
+    color: white;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 17px;
+    width: 100%;
+    height: fit-content;
+    min-height: 100px;
+    word-wrap: break-word;
+}
+
+.answer-btn:hover {
+    background-color: rgb(29, 80, 125);
+}
+
+ul li {
+    display:inline-block;
+    margin: 20px;
+    width: 40%;
+}
