@@ -34,8 +34,11 @@ class Lesson(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def getCourseName(self):
+        return self.course.name
+
     def __str__(self):
-        return self.title
+        return f'{self.title} - {self.course.name}'
     
 
 
@@ -108,17 +111,31 @@ class Payment(models.Model):
 
 class Quizzy(models.Model):
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
-    title = models.CharField(max_length=255)
+    title = models.CharField(max_length=255,unique=True)
     score = models.IntegerField(default=0)
+    
+    def __str__(self):
+        return f'{self.id}-{self.lesson.title}-{self.lesson.getCourseName()}'
+
 
 class Question(models.Model):
     quizzy = models.ForeignKey(Quizzy, on_delete=models.CASCADE, related_name='questions')
     text = models.TextField()
 
+    def getName(self):
+        return self.quizzy.title
+
+    def __str__(self):
+        return f'{self.quizzy.title}'
+
 class Answer(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     tof = models.BooleanField()
-    text = models.TextField()   
+    text = models.TextField()
+
+    def __str__(self):
+        return f'{self.question.getName()}'
+
 
 
 class CouponCode(models.Model):
