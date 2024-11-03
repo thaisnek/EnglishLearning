@@ -1,9 +1,87 @@
-<!-- templates/courses/question_list.html -->
 <!DOCTYPE html>
 <html>
 <head>
     <title>Danh sách câu hỏi</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #666;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        ul li {
+            margin: 0 10px;
+        }
+
+        ul li a {
+            text-decoration: none;
+            color: #007bff;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        ul li a:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
+
+        #answer-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .answer-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .answer-btn:hover {
+            background-color: #0056b3;
+        }
+
+        #current-score {
+            font-weight: bold;
+            color: #007bff;
+        }
+    </style>
+
+
+
     <script type="text/javascript">
         $(document).ready(function() {
             // Tự động tải câu hỏi đầu tiên khi trang được load
@@ -32,16 +110,16 @@
                     'csrfmiddlewaretoken': '{{ csrf_token }}'
                 }, function(data) {
                     if (data.correct) {
-                        alert('Đúng!');
                     } else {
-                        alert('Sai!');
                     }
+                    // Cập nhật điểm số ngay lập tức
+                    $("#current-score").text(data.current_score);
                     if (data.next_question_id) {
                         $.get("/questions/" + data.next_question_id + "/", function(nextData) {
                             $("#answer-container").html(nextData);
                         });
                     } else {
-                        alert('Hoàn thành quiz!');
+                        alert('Hoàn thành quiz với ' + data.current_score + "/{{question_count}}");
                         window.location.href = "{% url 'coursepage' slug=course_slug %}";
                     }
                 });
@@ -49,11 +127,11 @@
         });
     </script>
 </head>
+
 <body>
-    <h1>Danh sách câu hỏi</h1>
     <ul>
     {% for question in questions %}
-        <li><a href="{% url 'question-detail' question_id=question.id %}" class="question-link">{{ forloop.counter }}</a></li>
+        <li><a href="{% url 'question-detail' question_id=question.id %}" class="question-link"></a></li>
     {% endfor %}
     </ul>
     <div id="answer-container"></div>
