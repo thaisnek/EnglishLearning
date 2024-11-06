@@ -16,37 +16,21 @@ import uuid
 
 from django.shortcuts import get_object_or_404
 
-def check_answer(request):
-    if request.method == 'POST':
-        answer_id = request.POST.get('answer_id')
-        question_id = request.POST.get('question_id')
-        answer = get_object_or_404(Answer, id=answer_id)
-        question = get_object_or_404(Question, id=question_id)
-        correct = answer.tof
-
-        quizzy = question.quizzy
-        if correct:
-            quizzy.score += 1
-            quizzy.save()
-
-        next_question = Question.objects.filter(quizzy=question.quizzy, id__gt=question_id).first()
-        
-        response_data = {
-            'correct': correct,
-            'next_question_id': next_question.id if next_question else None,
-            'current_score': quizzy.score  # Trả về điểm số hiện tại
-        }
-        return JsonResponse(response_data)
-    return JsonResponse({'error': 'Invalid request'}, status=400)
 
 
 # Create your views here.
 
 
-def home(request):      
-    courses = Course.objects.filter(active=True) 
-    print(courses)
-    return render(request,template_name='courses/home.html',context={"courses":courses})
+from django.core.paginator import Paginator
+
+def home(request):
+    course_list = Course.objects.filter(active=True)
+    paginator = Paginator(course_list,8)  # Hiển thị n khóa học mỗi trang
+
+    page_number = request.GET.get('page')
+    courses = paginator.get_page(page_number)
+    
+    return render(request, 'courses/home.html', {'courses': courses})
 
 
 
@@ -259,3 +243,25 @@ def question_detail(request, question_id):
     }
     return render(request, 'courses/question_detail.html', context)
 
+def check_answer(request):
+    if request.method == 'POST':
+        answer_id = request.POST.get('answer_id')
+        question_id = request.POST.get('question_id')
+        answer = get_object_or_404(Answer, id=answer_id)
+        question = get_object_or_404(Question, id=question_id)
+        correct = answer.tof
+
+        quizzy = question.quizzy
+        if correct:
+            quizzy.score += 1
+            quizzy.save()
+
+        next_question = Question.objects.filter(quizzy=question.quizzy, id__gt=question_id).first()
+        
+        response_data = {
+            'correct': correct,
+            'next_question_id': next_question.id if next_question else None,
+            'current_score': quizzy.score  # Trả về điểm số hiện tại
+        }
+        return JsonResponse(response_data)
+    return JsonResponse({'error': 'Invalid request'}, status=400)
