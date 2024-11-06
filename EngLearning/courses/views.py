@@ -21,10 +21,16 @@ from django.shortcuts import get_object_or_404
 # Create your views here.
 
 
-def home(request):      
-    courses = Course.objects.filter(active=True) 
-    print(courses)
-    return render(request,template_name='courses/home.html',context={"courses":courses})
+from django.core.paginator import Paginator
+
+def home(request):
+    course_list = Course.objects.filter(active=True)
+    paginator = Paginator(course_list,8)  # Hiển thị n khóa học mỗi trang
+
+    page_number = request.GET.get('page')
+    courses = paginator.get_page(page_number)
+    
+    return render(request, 'courses/home.html', {'courses': courses})
 
 
 
