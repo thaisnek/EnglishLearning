@@ -64,11 +64,19 @@ class UserCourseAdminModel(admin.ModelAdmin):
     get_course.short_description = "Course"
     get_user.short_description = "User"
 
+
+class AnswerAdmin(admin.TabularInline):
+    model = Answer
+
+class QuestionAdmin(admin.ModelAdmin):
+    inlines = [AnswerAdmin]
+
+
+
 admin.site.register(Course, CourseAdmin)
 admin.site.register(Lesson)
 admin.site.register(Payment , PaymentAdmin)
 admin.site.register(UserCourse , UserCourseAdminModel)
 admin.site.register(Quizzy)
-admin.site.register(Question)
-admin.site.register(Answer)
+admin.site.register(Question,QuestionAdmin)
 admin.site.register(CouponCode)

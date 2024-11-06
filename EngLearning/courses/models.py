@@ -114,6 +114,12 @@ class Quizzy(models.Model):
     title = models.CharField(max_length=255,unique=True)
     score = models.IntegerField(default=0)
     
+    def getCourseName(self):
+        return self.lesson.getCourseName()
+    
+    def getLessonName(self):
+        return self.lesson.title
+
     def __str__(self):
         return f'{self.id}-{self.lesson.title}-{self.lesson.getCourseName()}'
 
@@ -122,11 +128,8 @@ class Question(models.Model):
     quizzy = models.ForeignKey(Quizzy, on_delete=models.CASCADE, related_name='questions')
     text = models.TextField()
 
-    def getName(self):
-        return self.quizzy.title
-
     def __str__(self):
-        return f'{self.quizzy.title}'
+        return f'{self.quizzy.title}-{self.quizzy.getLessonName()}-{self.quizzy.getCourseName()}'
 
 class Answer(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
