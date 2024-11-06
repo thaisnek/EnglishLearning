@@ -19,3 +19,12 @@ links.forEach(link=>{
         })
     }
 });
+
+const scroll=document.getElementById("lesson_list");
+const rfHeight=document.getElementsByClassName('col')[0].children;
+function updateScrollBar() {
+    scroll.style= "overflow-y:auto";
+    scroll.style.height=rfHeight[0].clientHeight+rfHeight[1].clientHeight + "px";
+}
+window.onload = updateScrollBar;
+window.addEventListener('resize', updateScrollBar);
