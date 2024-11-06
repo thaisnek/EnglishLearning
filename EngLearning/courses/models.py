@@ -136,12 +136,10 @@ class Answer(models.Model):
     tof = models.BooleanField()
     text = models.TextField()
 
-    def __str__(self):
-        return f'{self.question.getName()}'
-
-
-
 class CouponCode(models.Model):
     code = models.CharField(max_length=10)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='coupons')
     discount = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f'{self.course.name}'

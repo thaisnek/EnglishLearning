@@ -29,6 +29,3 @@
 .card.ms-auto {
   border: 1px solid black;
 }
-.container.mt-5:nth-child(5) {
-  max-width: fit-content;
-}
