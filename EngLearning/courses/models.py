@@ -137,7 +137,7 @@ class Answer(models.Model):
     text = models.TextField()
 
     def __str__(self):
-        return f'{self.question.getName()}'
+        return f'{self.question.text}'
 
 
 
