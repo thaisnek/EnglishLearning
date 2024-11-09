@@ -25,7 +25,7 @@ from django.core.paginator import Paginator
 
 def home(request):
     course_list = Course.objects.filter(active=True)
-    paginator = Paginator(course_list,8)  # Hiển thị n khóa học mỗi trang
+    paginator = Paginator(course_list,9)  # Hiển thị n khóa học mỗi trang
 
     page_number = request.GET.get('page')
     courses = paginator.get_page(page_number)

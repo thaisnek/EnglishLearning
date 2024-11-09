@@ -1,31 +1,18 @@
 var player;
-var lesson_list;
-var card;
-
+var video_list
 document.onreadystatechange = function () {
     if (document.readyState == 'interactive') {
-        player = document.getElementById('player');
-        lesson_list = document.getElementById("lesson_list");
-        card = document.querySelector(".card.p-3");
-        maintainRatio();
-        adjustLessonListHeight();
+        player = document.getElementById("player")
+        video_list = document.getElementById("video_list")
+        
+        maintainRatio()
     }
-};
-
+}
 function maintainRatio() {
-    var w = player.clientWidth;
-    var h = (w * 9) / 16;
+    var w = player.clientWidth
+    var h = (w * 9) / 16
     console.log({ w, h });
-    player.height = h;
+    player.height = h
+    video_list.style.maxHeight = h + "px"
 }
-
-function adjustLessonListHeight() {
-    if (card && lesson_list) {
-        lesson_list.style.maxHeight = `${card.clientHeight}px`;
-    }
-}
-
-window.onresize = function () {
-    maintainRatio();
-    adjustLessonListHeight();
-};
+window.onresize = maintainRatio
