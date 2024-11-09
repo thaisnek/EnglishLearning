@@ -55,8 +55,8 @@
     <ul>
     {% for question in questions %}
         <li><a href="{% url 'question-detail' question_id=question.id %}" class="question-link"></a></li>
-        <div id="answer-container"></div>
     {% endfor %}
     </ul>
+    <div id="answer-container"></div>
 </body>
 </html>

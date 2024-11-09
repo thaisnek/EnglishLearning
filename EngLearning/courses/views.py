@@ -59,7 +59,6 @@ def coursePage(request,slug):
             next_lecture = None
         previous_lecture = int(serial_number)-1
 
-
     video = Video.objects.get(serial_number = serial_number , course =course)
 
     if (video.is_preview is False):
